@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bash /c/Users/mvn439/Code/methylfenidaat-curves/.agents/skills/marimo-pair/scripts/discover-servers.sh *)",
+      "Bash(bash /c/Users/mvn439/Code/methylfenidaat-curves/.agents/skills/marimo-pair/scripts/execute-code.sh *)"
+    ]
+  }
+}
