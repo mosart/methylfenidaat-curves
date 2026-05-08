@@ -3,14 +3,15 @@
 # dependencies = [
 #     "marimo",
 #     "numpy==2.4.4",
-#     "altair==6.0.0",
+#     "altair==6.1.0",
 #     "pandas==3.0.2",
+#     "pyarrow==24.0.0",
 # ]
 # ///
 
 import marimo
 
-__generated_with = "0.23.0"
+__generated_with = "0.23.5"
 app = marimo.App(
     width="medium",
     css_file="/usr/local/_marimo/custom.css",
