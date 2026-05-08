@@ -226,14 +226,14 @@ def grafiek(
     # Actief schema bepalen en dosis-lijst opbouwen
     active=schema_tabs_ui.value
 
-    if active=="Schema 1 — Alleen IR":
+    if active=="Schema 1 — Alleen ER":
+        doses=[{"mg":27,"fn":er_curve,"t0":wake,"label":"27 mg Concerta ER","color":_C_ER27}]
+    elif active=="Schema 2 — Alleen IR":
         doses=[
             {"mg":10,"fn":ir_curve,"t0":wake,            "label":"10 mg IR",        "color":_C_IR10},
             {"mg":10,"fn":ir_curve,"t0":wake+s1_d2.value, "label":"10 mg IR",        "color":_C_IR10},
             {"mg": 5,"fn":ir_curve,"t0":wake+s1_d3.value, "label":"5 mg IR (half)",  "color":_C_IR5},
         ]
-    elif active=="Schema 2 — Alleen ER":
-        doses=[{"mg":27,"fn":er_curve,"t0":wake,"label":"27 mg Concerta ER","color":_C_ER27}]
     elif active=="Schema 3 — ER + IR":
         doses=[
             {"mg":27,"fn":er_curve,"t0":wake,            "label":"27 mg Concerta ER","color":_C_ER27},
@@ -369,7 +369,7 @@ def grafiek(
 
     chart=alt.layer(rb_area,thr_line,areas,lines,total_line,dose_rules,selectors,cursor,dot,
                     *rb_layers
-    ).properties(width="container",height=340).configure_view(
+    ).properties(width="container",height=340,title=active).configure_view(
         strokeOpacity=0,fill="white").configure(background="white",font="system-ui, sans-serif")
 
     mo.ui.altair_chart(chart)
@@ -468,15 +468,15 @@ def schema_tabs_cel(mo, s1_d2, s1_d3, s3_ir, s4_er, wake_input):
         return mo.callout(mo.md("\n".join(lines)),kind="success")
 
     schema_tabs_ui=mo.ui.tabs({
-        "Schema 1 — Alleen IR": mo.vstack([
+        "Schema 1 — Alleen ER": mo.vstack([
+            mo.md("**27 mg Concerta ER** — referentieschema, een pil per dag."),
+            _alarm([("27 mg Concerta ER",0)]),
+        ],gap="0.5rem"),
+        "Schema 2 — Alleen IR": mo.vstack([
             mo.md("**10 mg IR + 10 mg IR + 5 mg IR** — volledige controle, geen ER."),
             mo.md(f"1e dosis bij ontwaaktijd ({_hhmm(_wake)})"),
             s1_d2, s1_d3,
             _alarm([("10 mg IR (1e dosis)",0),("10 mg IR (2e dosis)",s1_d2.value),("5 mg IR (3e dosis)",s1_d3.value)]),
-        ],gap="0.5rem"),
-        "Schema 2 — Alleen ER": mo.vstack([
-            mo.md("**27 mg Concerta ER** — referentieschema, een pil per dag."),
-            _alarm([("27 mg Concerta ER",0)]),
         ],gap="0.5rem"),
         "Schema 3 — ER + IR": mo.vstack([
             mo.md("**27 mg Concerta ER** bij ontwaaktijd + **10 mg IR** booster later."),
