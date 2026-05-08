@@ -20,6 +20,9 @@ uvx marimo edit methylfenidaat-curves.py
 # Or if marimo is already installed
 marimo run methylfenidaat-curves.py
 marimo edit methylfenidaat-curves.py
+
+# Or running in a sandbox and watch changes done by agents
+marimo edit methylfenidaat-curves.py --sandbox --watch
 ```
 
 ## Checking the notebook
