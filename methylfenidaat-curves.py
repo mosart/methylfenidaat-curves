@@ -258,6 +258,9 @@ def grafiek(
     tick_vals=list(range(int(wake),int(wake+16)))
     lmap_js="{"+", ".join(f"{v}: '{fmt(v)}'" for v in tick_vals)+"}"
 
+    # WASM/molab: marimo wraps pd.DataFrame in narwhals — unwrap voor Altair
+    def _df(data): f=pd.DataFrame(data); return f.to_native() if hasattr(f,"to_native") else f
+
     # Bereken individuele curves en sommeer tot totale curve
     rows,total=[],np.zeros_like(t_arr)
     for d in doses:
@@ -265,9 +268,9 @@ def grafiek(
         for ti,ci in zip(t_arr,c):
             rows.append({"t":ti,"Tijd":fmt(ti),"ng_mL":round(float(ci),4),"Dosis":d["label"]})
 
-    df=pd.DataFrame(rows)
+    df=_df(rows)
     # Dosis-label "Totaal" zodat de kleurschaal de totale lijn meeneemt in de legenda
-    df_total=pd.DataFrame([
+    df_total=_df([
         {"t":float(ti),"Tijd":fmt(float(ti)),"ng_mL":round(float(ci),4),"Dosis":"Totaal"}
         for ti,ci in zip(t_arr,total)
     ])
@@ -281,12 +284,12 @@ def grafiek(
     rebound_t = float(t_arr[np.argmax(rb_mask)]) if rb_mask.any() else None
 
     # Zone achter reboundmoment (rode achtergrondvlak)
-    df_rb_zone=pd.DataFrame([{"t":float(ti),"ng_mL":round(float(ci),4)}
-                              for ti,ci in zip(t_arr,total)
-                              if rebound_t is not None and ti>=rebound_t])
+    df_rb_zone=_df([{"t":float(ti),"ng_mL":round(float(ci),4)}
+                    for ti,ci in zip(t_arr,total)
+                    if rebound_t is not None and ti>=rebound_t])
     # Horizontale drempellijn van dagpiek tot einde tijdvenster
-    df_thr=pd.DataFrame([{"t":float(tmax_t),"ng_mL":threshold},
-                          {"t":float(t_arr[-1]),"ng_mL":threshold}])
+    df_thr=_df([{"t":float(tmax_t),"ng_mL":threshold},
+                {"t":float(t_arr[-1]),"ng_mL":threshold}])
 
     # Piekmomenten per afzonderlijke dosis (voor woordelijke samenvatting)
     dose_peaks=[]
@@ -329,7 +332,7 @@ def grafiek(
     # Rode zone achter reboundmoment
     rb_area=(alt.Chart(df_rb_zone).mark_area(opacity=0.18,color=_C_REB,interpolate="monotone")
              .encode(x=x,y=y_tot)) if len(df_rb_zone)>0 \
-        else alt.Chart(pd.DataFrame({"t":[],"ng_mL":[]})).mark_point()
+        else alt.Chart(_df({"t":[],"ng_mL":[]})).mark_point()
 
     # Horizontale drempellijn (25%-niveau)
     thr_line=alt.Chart(df_thr).mark_line(strokeDash=[4,4],strokeWidth=1.5,
@@ -337,15 +340,15 @@ def grafiek(
         x=alt.X("t:Q"),y=alt.Y("ng_mL:Q",scale=alt.Scale(domain=[0,_y_domain])))
 
     # Verticale stippellijnen op inname-tijdstippen
-    vlines_df=pd.DataFrame([{"t":float(d["t0"]),"label":f"▼ {d['mg']} mg  ({fmt(d['t0'])})","color":d["color"]}
-                             for d in doses])
+    vlines_df=_df([{"t":float(d["t0"]),"label":f"▼ {d['mg']} mg  ({fmt(d['t0'])})","color":d["color"]}
+                   for d in doses])
     dose_rules=alt.Chart(vlines_df).mark_rule(strokeDash=[3,3],strokeWidth=1.5,opacity=0.45).encode(
         x=alt.X("t:Q"),color=alt.Color("color:N",scale=None),tooltip=alt.Tooltip("label:N"))
 
     # Verticale rebound-lijn met kleur uit gedeelde schaal
     rb_layers=[]
     if rebound_t is not None:
-        _df_rb_rule=pd.DataFrame([{"t":rebound_t,"label":f"Rebound ~{fmt(rebound_t)}","Dosis":"Rebound"}])
+        _df_rb_rule=_df([{"t":rebound_t,"label":f"Rebound ~{fmt(rebound_t)}","Dosis":"Rebound"}])
         rb_layers.append(
             alt.Chart(_df_rb_rule)
             .mark_rule(strokeWidth=2,opacity=0.8)
